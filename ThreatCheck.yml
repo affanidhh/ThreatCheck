@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  cuckoo:
+    image: cuckoosandbox/cuckoo
+    container_name: cuckoo
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./backend/cuckoo:/cuckoo
+
+  clamav:
+    image: clamav/clamav
+    container_name: clamav
+    ports:
+      - "3310:3310"
+    volumes:
+      - ./backend/clamav:/clamav
+
+  freshclam:
+    image: clamav/clamav
+    container_name: freshclam
+    command: freshclam -d -c 6
+    volumes:
+      - ./backend/clamav:/clamav
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+
+  api:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - cuckoo
+      - clamav
+      - elasticsearch
+
+  yara-update:
+    image: alpine
+    container_name: yara-update
+    volumes:
+      - ./backend/yara-update:/yara
+    command: /bin/sh -c "crontab /yara/crontab && crond -f"
+
+volumes:
+  esdata:

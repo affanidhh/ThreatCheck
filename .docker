@@ -1,0 +1,16 @@
+malware-scanner/
+├── backend/
+│   ├── cuckoo/
+│   ├── clamav/
+│   ├── yara/
+│   ├── analysis/
+│   ├── api/
+│   │   ├── Dockerfile
+│   │   ├── api.py
+│   │   └── requirements.txt
+│   └── yara-update/
+│       ├── update_yara_rules.sh
+│       └── crontab
+├── docker-compose.yml
+├── .gitignore
+└── README.md
